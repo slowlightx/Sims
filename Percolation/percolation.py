@@ -115,7 +115,7 @@ class PercolationProcess:
                 fig = plt.figure(1)
                 pos = 240 + (i // 16) + 1
                 ax = fig.add_subplot(pos)
-                ax.imshow(figure, cmap='Blues')
+                ax.imshow(figure, cmap='Blues', vmin=0, vmax=1)
         plt.show()
 
         return
