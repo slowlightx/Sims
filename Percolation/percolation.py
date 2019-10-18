@@ -6,7 +6,7 @@ class DisjointSet:
     def __init__(self, n):
         self.nodes = [i for i in range(n)]
         self.father_nodes = [i for i in range(n)]
-        self.rank = [1 for i in range(n)]
+        self.rank = [1]*n
 
     def find_root(self, node):
         root_tmp = self.father_nodes[node]
@@ -36,7 +36,7 @@ class DisjointSet:
 class Percolation:
     ''' 2-Dimension Percolation '''
     def __init__(self, n):
-        self.map = np.zeros((n, n))
+        self.map = np.ones((n, n))
         self.connected_set = DisjointSet(n*n+2) # n*n and n*n+1 are respectively imaginary top and bottom
         self.n_visited = 0
         self.n = n
@@ -48,10 +48,10 @@ class Percolation:
     def visit(self, row, col):
         if not self.is_visited(row, col):
             self.n_visited += 1
-            self.map[row, col] = 1
+            self.map[row, col] = 0
 
     def is_visited(self, row, col):
-        return self.map[row, col] == 1
+        return self.map[row, col] == 0
 
     def visit_neighbors(self, row, col):
         if self.is_visited(row, col):
@@ -93,19 +93,29 @@ class PercolationProcess:
         return self.n_critical / (self.lattice.n * self.lattice.n)
 
     def percolate(self):
-        perm = np.random.permutation(self.lattice.n*self.lattice.n)
+        l = self.lattice.n
+        perm = np.random.permutation(l*l)
         for i in range(len(perm)):
             index = perm[i]
-            row = index // self.lattice.n
-            col = index % self.lattice.n
+            row = index // l
+            col = index % l
             self.lattice.visit(row, col)
             self.lattice.visit_neighbors(row, col)
             # every n/10 iterations plot a figure u
-            if i%16 == 0:
+            if i % 16 == 0:
+                figure = np.copy(self.lattice.map)
+                for row in range(l):
+                    for col in range(l):
+                        if self.lattice.connected_set.is_union(row*l + col, l*l) \
+                                or self.lattice.connected_set.is_union(row*l + col, l*l+1):
+                            if self.lattice.is_percolated():
+                                figure[row, col] = 0.7
+                            else:
+                                figure[row, col] = 0.3
                 fig = plt.figure(1)
                 pos = 240 + (i // 16) + 1
                 ax = fig.add_subplot(pos)
-                im = ax.imshow(self.lattice.map, cmap=plt.cm.gray)
+                ax.imshow(figure, cmap='Blues')
         plt.show()
 
         return
